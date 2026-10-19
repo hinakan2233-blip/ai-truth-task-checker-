@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>AI Truth & Task Checker</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #0f172a;
+            color: white;
+            margin: 0;
+            padding: 25px 15px;
+        }
+
+        .container {
+            max-width: 750px;
+            margin: auto;
+            text-align: center;
+        }
+
+        h1 {
+            color: #38bdf8;
+        }
+
+        .intro {
+            color: #cbd5e1;
+            line-height: 1.6;
+        }
+
+        .card {
+            background: #1e293b;
+            padding: 22px;
+            margin: 20px 0;
+            border-radius: 14px;
+            text-align: left;
+        }
+
+        h2 {
+            color: #7dd3fc;
+        }
+
+        textarea {
+            width: 100%;
+            height: 100px;
+            box-sizing: border-box;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #64748b;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+
+        button {
+            background: #0284c7;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 18px;
+            margin-top: 12px;
+            cursor: pointer;
+            font-size: 15px;
+        }
+
+        button:hover {
+            background: #0369a1;
+        }
+
+        .result {
+            background: #334155;
+            padding: 14px;
+            border-radius: 8px;
+            margin-top: 12px;
+            overflow-wrap: anywhere;
+            line-height: 1.6;
+        }
+
+        .note {
+            color: #fbbf24;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+
+        <h1>AI Truth & Task Checker</h1>
+
+        <p class="intro">
+            A simple tool to test maths answers, review AI responses,
+            and perform basic code checks.
+        </p>
+
+        <div class="card">
+            <h2>🧮 1. Math Checker</h2>
+
+            <p>
+                Example: 25 x 4 = 100
+            </p>
+
+            <textarea id="mathInput"
+                placeholder="Enter a maths question, e.g. 25 x 4 = 90"></textarea>
+
+            <button onclick="checkMath()">Check Maths</button>
+
+            <div class="result" id="mathResult">
+                Your maths result will appear here.
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>🤖 2. AI Answer Checker</h2>
+
+            <p>
+                Enter an AI answer you want to review.
+            </p>
+
+            <textarea id="aiInput"
+                placeholder="Paste an AI answer here..."></textarea>
+
+            <button onclick="checkAI()">Review AI Answer</button>
+
+            <div class="result" id="aiResult">
+                Your review will appear here.
+            </div>
+
+            <p class="note">
+                This demo cannot independently confirm facts.
+                It provides basic guidance for reviewing an answer.
+            </p>
+        </div>
+
+        <div class="card">
+            <h2>💻 3. Code Checker</h2>
+
+            <p>
+                Paste a small piece of JavaScript code below.
+            </p>
+
+            <textarea id="codeInput"
+                placeholder="Example: let total = 10;"></textarea>
+
+            <button onclick="checkCode()">Check Code</button>
+
+            <div class="result" id="codeResult">
+                Your code review will appear here.
+            </div>
+
+            <p class="note">
+                This is a basic review, not a complete security scanner
+                or a full programming-language validator.
+            </p>
+        </div>
+
+        <p class="note">
+            Demo version: advanced AI verification will require
+            additional technology in a future version.
+        </p>
+
+    </div>
+
+    <script>
+        function checkMath() {
+            const input = document.getElementById("mathInput")
+                .value.trim();
+
+            const result = document.getElementById("mathResult");
+
+            if (input === "") {
+                result.textContent = "Please enter a maths question.";
+                return;
+            }
+
+            const match = input.match(
+                /(-?\d+(?:\.\d+)?)\s*([+xX*\/\-])\s*(-?\d+(?:\.\d+)?)\s*(?:=|is|answer is)\s*(-?\d+(?:\.\d+)?)/i
+            );
+
+            if (!match) {
+                result.textContent =
+                    "I could not understand this example. Try a format such as 25 x 4 = 100.";
+                return;
+            }
+
+            const a = Number(match[1]);
+            const operator = match[2].toLowerCase();
+            const b = Number(match[3]);
+            const claimedAnswer = Number(match[4]);
+
+            let correctAnswer;
+
+            switch (operator) {
+                case "+":
+                    correctAnswer = a + b;
+                    break;
+                case "-":
+                    correctAnswer = a - b;
+                    break;
+                case "x":
+                case "*":
+                    correctAnswer = a * b;
+                    break;
+                case "/":
+                    if (b === 0) {
+                        result.textContent =
+                            "Cannot divide by zero.";
+                        return;
+                    }
+                    correctAnswer = a / b;
+                    break;
+                default:
+                    result.textContent =
+                        "This maths operation is not supported.";
+                    return;
+            }
+
+            if (Math.abs(correctAnswer - claimedAnswer) < 0.000000001) {
+                result.textContent =
+                    "✅ CHECK PASSED: Your answer is correct. " +
+                    a + " " + operator + " " + b + " = " + correctAnswer;
+            } else {
+                result.textContent =
+                    "❌ CHECK FAILED: Your answer is " + claimedAnswer +
+                    ", but the correct answer is " + correctAnswer + ".";
+            }
+        }
+
+        function checkAI() {
+            const input = document.getElementById("aiInput")
+                .value.trim();
+
+            const result = document.getElementById("aiResult");
+
+            if (input === "") {
+                result.textContent =
+                    "Please paste an AI answer to review.";
+                return;
+            }
+
+            const wordCount = input.split(/\s+/).length;
+
+            let message =
+                "📝 BASIC REVIEW\n\n" +
+                "Text received: " + wordCount + " words.\n\n" +
+                "Please review these points:\n" +
+                "1. Are the facts supported by reliable sources?\n" +
+                "2. Can important claims be checked independently?\n" +
+                "3. Are there contradictions or missing details?\n" +
+                "4. Does the answer address the original question?\n\n" +
+                "⚠️ This demo has not verified whether the claims are true.";
+
+            result.textContent = message;
+        }
+
+        function checkCode() {
+            const input = document.getElementById("codeInput")
+                .value.trim();
+
+            const result = document.getElementById("codeResult");
+
+            if (input === "") {
+                result.textContent =
+                    "Please paste some JavaScript code.";
+                return;
+            }
+
+            const warnings = [];
+
+            if (input.includes("eval(")) {
+                warnings.push(
+                    "Review eval(): running untrusted text as code can be dangerous."
+                );
+            }
+
+            if (/password\s*=\s*["'][^"']+["']/i.test(input)) {
+                warnings.push(
+                    "Possible hard-coded password found. Avoid storing passwords directly in code."
+                );
+            }
+
+            const openBraces =
+                (input.match(/\{/g) || []).length;
+
+            const closeBraces =
+                (input.match(/\}/g) || []).length;
+
+            if (openBraces !== closeBraces) {
+                warnings.push(
+                    "The number of opening and closing curly braces does not match."
+                );
+            }
+
+            const openParentheses =
+                (input.match(/\(/g) || []).length;
+
+            const closeParentheses =
+                (input.match(/\)/g) || []).length;
+
+            if (openParentheses !== closeParentheses) {
+                warnings.push(
+                    "The number of opening and closing parentheses does not match."
+                );
+            }
+
+            if (warnings.length > 0) {
+                result.textContent =
+                    "⚠️ REVIEW NEEDED\n\n" +
+                    warnings.join("\n\n") +
+                    "\n\nThese are basic checks only.";
+            } else {
+                result.textContent =
+                    "✅ Basic checks completed. No listed issue was detected.\n\n" +
+                    "This does not prove that the code is correct or secure.";
+            }
+        }
+    </script>
+</body>
+</html>
